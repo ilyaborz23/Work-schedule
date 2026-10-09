@@ -4,13 +4,15 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "migrate": "tsx --env-file=.env src/db/migrate.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
     "express": "^5.2.1"
   },
   "devDependencies": {
