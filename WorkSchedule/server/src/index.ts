@@ -1,5 +1,7 @@
 import express from "express";
 import shiftRoutes from "./routes/shiftRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import { errorHandler, notFound } from "./middleware/errorHandler.js";
 
 
 const app = express();
@@ -9,6 +11,9 @@ app.use("/api/shifts", shiftRoutes);
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
+app.use("/api/auth", authRoutes);
+app.use(notFound);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server started on http://localhost:${PORT}`);
