@@ -22,4 +22,10 @@ await sql`
   )
 `;
 
+await sql`
+  ALTER TABLE shifts
+  ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'approved'
+    CHECK (status IN ('pending', 'approved', 'rejected'))
+`;
+
 console.log("Migration done");
