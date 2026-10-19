@@ -3,6 +3,7 @@ import './App.css'
 import { clearAuth, getSavedUser, type User } from './api'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import WeekCalendar from './components/WeekCalendar'
 
 function App() {
   const [user, setUser] = useState<User | null>(getSavedUser)
@@ -41,7 +42,7 @@ function App() {
       </header>
 
       <main>
-        <p>The shift calendar will be here</p>
+        <WeekCalendar user={user} />
       </main>
     </div>
   )

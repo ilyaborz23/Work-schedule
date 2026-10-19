@@ -103,3 +103,114 @@ main {
   padding: 16px;
   text-align: start;
 }
+
+.calendar-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.calendar-range {
+  margin-inline-start: 8px;
+  color: var(--text-h);
+  font-weight: 500;
+}
+
+/* The grid scrolls sideways on narrow screens instead of squeezing */
+.calendar-scroll {
+  overflow-x: auto;
+}
+
+.calendar-grid {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+}
+
+.calendar-grid th,
+.calendar-grid td {
+  border: 1px solid var(--border);
+  padding: 6px;
+  vertical-align: top;
+}
+
+.calendar-grid thead th {
+  color: var(--text-h);
+  font-weight: 500;
+  text-align: center;
+}
+
+.calendar-grid th.today {
+  background: var(--accent-bg);
+}
+
+.calendar-grid .slot-label {
+  width: 100px;
+  color: var(--text-h);
+  font-weight: 500;
+  text-align: start;
+}
+
+.calendar-grid td {
+  height: 80px;
+}
+
+.shift {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  border-inline-start: 4px solid;
+  color: var(--text-h);
+}
+
+.shift-pending {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: #ca8a04;
+}
+
+.shift-approved {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: #16a34a;
+}
+
+.shift-rejected {
+  background: rgba(148, 163, 184, 0.15);
+  border-color: #94a3b8;
+  color: var(--text);
+  text-decoration: line-through;
+}
+
+.shift-status {
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.shift-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.shift-actions button,
+button.request {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.shift-actions button.reject {
+  background: #dc2626;
+}
+
+button.request {
+  width: 100%;
+  background: none;
+  color: var(--accent);
+  border: 1px dashed var(--accent-border);
+}

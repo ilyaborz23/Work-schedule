@@ -5,6 +5,18 @@ export type User = {
   role: 'admin' | 'employee'
 }
 
+export type ShiftStatus = 'pending' | 'approved' | 'rejected'
+
+export type Shift = {
+  id: number
+  user_id: number
+  start_time: string
+  end_time: string
+  status: ShiftStatus
+}
+
+export type Slot = 'morning' | 'afternoon' | 'night'
+
 const TOKEN_KEY = 'token'
 const USER_KEY = 'user'
 
@@ -69,4 +81,22 @@ export const login = (email: string, password: string) =>
   api<{ token: string; user: User }>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
+  })
+
+export const getShifts = () => api<Shift[]>('/shifts')
+
+export const getUsers = () => api<User[]>('/users')
+
+// Employee: request a slot on a day (date is "YYYY-MM-DD")
+export const requestShift = (date: string, slot: Slot) =>
+  api<Shift>('/shifts', {
+    method: 'POST',
+    body: JSON.stringify({ date, slot }),
+  })
+
+// Admin: approve or reject a request
+export const setShiftStatus = (id: number, status: 'approved' | 'rejected') =>
+  api<Shift>(`/shifts/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
   })
