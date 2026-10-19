@@ -94,6 +94,20 @@ export const requestShift = (date: string, slot: Slot) =>
     body: JSON.stringify({ date, slot }),
   })
 
+// Admin: create a shift with any hours (approved right away)
+export const createShift = (userId: number, start: Date, end: Date) =>
+  api<Shift>('/shifts', {
+    method: 'POST',
+    body: JSON.stringify({ user_id: userId, start_time: start, end_time: end }),
+  })
+
+// Admin: change a shift (it becomes approved)
+export const updateShift = (id: number, userId: number, start: Date, end: Date) =>
+  api<Shift>(`/shifts/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ user_id: userId, start_time: start, end_time: end }),
+  })
+
 // Admin: approve or reject a request
 export const setShiftStatus = (id: number, status: 'approved' | 'rejected') =>
   api<Shift>(`/shifts/${id}/status`, {

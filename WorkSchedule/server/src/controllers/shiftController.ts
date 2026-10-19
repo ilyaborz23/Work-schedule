@@ -14,6 +14,7 @@ const SLOT_HOURS = 8;
 
 const MIN_SHIFT_HOURS = 4;
 const MAX_SHIFT_HOURS = 12;
+const MAX_HOURS_IN_A_ROW = 12;
 const MAX_WEEK_HOURS = 60;
 
 export const getAllShifts = async (req: Request, res: Response) => {
@@ -101,6 +102,29 @@ const checkShiftRules = async (userId: number, start: Date, end: Date, excludeId
           AND start_time < ${end} AND end_time > ${start}`;
     if (overlapping.length > 0) {
         return "Employee already has a shift at this time";
+    }
+
+    // Shifts that touch end-to-start are one block of work: walk back and forward to find its edges
+    let blockStart = start;
+    let blockEnd = end;
+    while (true) {
+        const prev = await sql`
+            SELECT start_time FROM shifts
+            WHERE user_id = ${userId} AND status <> 'rejected' AND id <> ${excludeId}
+              AND end_time = ${blockStart}`;
+        if (!prev[0]) break;
+        blockStart = new Date(prev[0].start_time);
+    }
+    while (true) {
+        const next = await sql`
+            SELECT end_time FROM shifts
+            WHERE user_id = ${userId} AND status <> 'rejected' AND id <> ${excludeId}
+              AND start_time = ${blockEnd}`;
+        if (!next[0]) break;
+        blockEnd = new Date(next[0].end_time);
+    }
+    if ((blockEnd.getTime() - blockStart.getTime()) / HOUR > MAX_HOURS_IN_A_ROW) {
+        return `Employee cannot work more than ${MAX_HOURS_IN_A_ROW} hours in a row`;
     }
 
     // Israeli week: Sunday to Saturday
