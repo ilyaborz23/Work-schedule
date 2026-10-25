@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs'
 import type { Shift, User } from './api'
-import { SLOTS, addDays, formatTime, placeShift, toDateKey, weekDays } from './dates'
+import { SLOTS, addDays, coversSlot, formatTime, placeShift, toDateKey, weekDays } from './dates'
 import { dictionaries } from './i18n'
 
 // The file is always in Hebrew, whatever language the app is in
@@ -59,14 +59,14 @@ export async function exportRoster(weekStart: Date, staff: User[], shifts: Shift
           .map((s) => ltr(`${formatTime(s.start_time)}–${formatTime(s.end_time)}`))
           .join('\n'),
       ),
-      mine.reduce((sum, s) => sum + hours(s), 0),
+      // Rounded to 2 decimals and no number format: "0.#" showed 8 as "8."
+      Math.round(mine.reduce((sum, s) => sum + hours(s), 0) * 100) / 100,
     ])
     row.eachCell({ includeEmpty: true }, (cell, col) => {
       cell.alignment = { horizontal: col === 1 ? 'right' : 'center', vertical: 'middle', wrapText: true }
       cell.border = { bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } } }
       if (col > 1 && col < lastCol && cell.value) cell.fill = fill(SHIFT_FILL)
     })
-    row.getCell(lastCol).numFmt = '0.#'
     row.getCell(lastCol).font = { bold: true }
   }
 
@@ -77,10 +77,7 @@ export async function exportRoster(weekStart: Date, staff: User[], shifts: Shift
       `${t.slots[slot.key]} (${ltr(`${slot.start}–${slot.end}`)})`,
       ...dayKeys.map(
         (day) =>
-          approved.filter((s) => {
-            const place = placeShift(s)
-            return place.day === day && place.slot === slot.key
-          }).length,
+          approved.filter((s) => coversSlot(s, day, slot)).length,
       ),
     ])
     row.font = { italic: true }

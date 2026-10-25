@@ -22,9 +22,11 @@ const USER_KEY = 'user'
 
 export class ApiError extends Error {
   status: number
-  constructor(status: number, message: string) {
+  code?: string // e.g. "MAX_WEEK", translated in i18n.ts (t.serverErrors)
+  constructor(status: number, message: string, code?: string) {
     super(message)
     this.status = status
+    this.code = code
   }
 }
 
@@ -66,7 +68,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
 
   const data = res.status === 204 ? null : await res.json().catch(() => null)
   if (!res.ok) {
-    throw new ApiError(res.status, data?.message ?? 'Request failed')
+    throw new ApiError(res.status, data?.message ?? 'Request failed', data?.code)
   }
   return data as T
 }

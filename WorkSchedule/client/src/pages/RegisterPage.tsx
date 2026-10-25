@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import Alert from '../components/Alert'
 import AuthLayout from '../components/AuthLayout'
 import { ApiError, login, register, saveAuth, type User } from '../api'
-import { useI18n } from '../i18n'
+import { apiErrorText, useI18n } from '../i18n'
 
 type Props = {
   onLogin: (user: User) => void
@@ -28,10 +28,8 @@ function RegisterPage({ onLogin, onSwitchToLogin }: Props) {
       saveAuth(token, user)
       onLogin(user)
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
-        setError(t.emailTaken)
-      } else if (err instanceof ApiError && err.status === 400) {
-        setError(err.message)
+      if (err instanceof ApiError && (err.status === 400 || err.status === 409)) {
+        setError(apiErrorText(err, t))
       } else {
         setError(t.signUpFailed)
       }

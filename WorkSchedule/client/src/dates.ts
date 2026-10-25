@@ -34,15 +34,27 @@ export const toDateKey = (date: Date) => {
 export const formatTime = (iso: string) =>
   new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 
-// Which day and slot a shift belongs to, by its local start time.
-// A shift starting after midnight (00–07) is the previous day's night.
+// Which day and slot a shift belongs to: the slot whose start (07 / 15 / 23) is nearest
+// to the shift's local start. 05:00 → that day's morning, 01:00 → the previous day's night.
 export const placeShift = (shift: Shift): { day: string; slot: Slot } => {
   const start = new Date(shift.start_time)
-  const hour = start.getHours()
-  if (hour >= 7 && hour < 15) return { day: toDateKey(start), slot: 'morning' }
-  if (hour >= 15 && hour < 23) return { day: toDateKey(start), slot: 'afternoon' }
-  if (hour >= 23) return { day: toDateKey(start), slot: 'night' }
+  const hour = start.getHours() + start.getMinutes() / 60
+  if (hour >= 3 && hour < 11) return { day: toDateKey(start), slot: 'morning' }
+  if (hour >= 11 && hour < 19) return { day: toDateKey(start), slot: 'afternoon' }
+  if (hour >= 19) return { day: toDateKey(start), slot: 'night' }
   return { day: toDateKey(addDays(start, -1)), slot: 'night' }
+}
+
+// Does the shift cover at least half of a slot on that day? Used for coverage counts,
+// so a 07–19 shift counts for both morning and afternoon
+export const coversSlot = (shift: Shift, day: string, slot: (typeof SLOTS)[number]) => {
+  const slotStart = new Date(`${day}T${slot.start}`)
+  const endDay = slot.key === 'night' ? toDateKey(addDays(slotStart, 1)) : day
+  const slotEnd = new Date(`${endDay}T${slot.end}`)
+  const overlap =
+    Math.min(slotEnd.getTime(), new Date(shift.end_time).getTime()) -
+    Math.max(slotStart.getTime(), new Date(shift.start_time).getTime())
+  return overlap >= (slotEnd.getTime() - slotStart.getTime()) / 2
 }
 
 // Short slot name ("M" / "ב") for a standard slot, otherwise the real hours like "07–19"

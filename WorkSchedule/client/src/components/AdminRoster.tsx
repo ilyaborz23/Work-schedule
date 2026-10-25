@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Clock, FileSpreadsheet, Plus, Search } from 'lucide-react'
 import { getShifts, getUsers, type Shift, type User } from '../api'
-import { SLOTS, placeShift, shiftLabel, startOfWeek, toDateKey, weekDays } from '../dates'
+import { SLOTS, coversSlot, placeShift, shiftLabel, startOfWeek, toDateKey, weekDays } from '../dates'
 import { useI18n } from '../i18n'
 import { STATUS_STYLES } from '../ui'
 import Alert from './Alert'
@@ -83,8 +83,8 @@ function AdminRoster() {
   }
 
   // How many approved people work each slot on a day
-  const coverage = (day: string, slot: string) =>
-    weekShifts.filter((s) => s.status === 'approved' && placeShift(s).day === day && placeShift(s).slot === slot).length
+  const coverage = (day: string, slot: (typeof SLOTS)[number]) =>
+    weekShifts.filter((s) => s.status === 'approved' && coversSlot(s, day, slot)).length
 
   return (
     <div className="flex flex-col gap-4">
@@ -236,7 +236,7 @@ function AdminRoster() {
                 <td key={day} className="border-s border-line px-0.5 py-2 md:px-1">
                   <div className="flex flex-col items-center gap-0.5 md:flex-row md:justify-center md:gap-1">
                     {SLOTS.map((slot) => {
-                      const count = coverage(day, slot.key)
+                      const count = coverage(day, slot)
                       return (
                         <span
                           key={slot.key}

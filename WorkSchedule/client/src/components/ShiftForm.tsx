@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Check, X } from 'lucide-react'
-import { ApiError, createShift, setShiftStatus, updateShift, type Shift, type User } from '../api'
+import { createShift, setShiftStatus, updateShift, type Shift, type User } from '../api'
 import { SLOTS, formatTime } from '../dates'
-import { useI18n } from '../i18n'
+import { apiErrorText, useI18n } from '../i18n'
 import { SLOT_ICONS } from '../ui'
 import Alert from './Alert'
 import StatusBadge from './StatusBadge'
@@ -40,7 +40,7 @@ function ShiftForm({ users, shift, userId: initialUserId, date: initialDate, onS
       await action()
       onSaved()
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t.somethingWrong)
+      setError(apiErrorText(err, t))
     } finally {
       setSaving(false)
     }

@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { ShiftStatus, Slot } from './api'
+import { ApiError, type ShiftStatus, type Slot } from './api'
 
 export type Lang = 'en' | 'he'
 
@@ -24,7 +24,6 @@ const en = {
   haveAccount: 'Already have an account?',
   invalidLogin: 'Invalid email or password',
   loginFailed: 'Login failed, please try again',
-  emailTaken: 'A user with this email already exists',
   signUpFailed: 'Sign up failed, please try again',
 
   // Header
@@ -82,6 +81,26 @@ const en = {
 
   // Excel
   hours: 'Hours',
+
+  // Server errors by code (see ERRORS in server shiftController.ts)
+  serverErrors: {
+    MISSING_FIELDS: 'Please fill in all fields',
+    INVALID_USER_ID: 'Invalid employee',
+    INVALID_DATE: 'Invalid date',
+    END_BEFORE_START: 'End time must be after start time',
+    USER_NOT_FOUND: 'Employee not found',
+    SLOT_REQUIRED: 'Choose a day and a shift',
+    INVALID_SLOT: 'Shift must be morning, afternoon or night',
+    INVALID_DAY: 'Invalid date',
+    SLOT_STARTED: 'This shift has already started',
+    SHIFT_LENGTH: 'A shift must be between 4 and 12 hours',
+    OVERLAP: 'The employee already has a shift at this time',
+    MAX_IN_A_ROW: 'An employee cannot work more than 12 hours in a row',
+    MAX_WEEK: 'An employee cannot work more than 60 hours a week',
+    REGISTER_FIELDS: 'Name, email and password are required',
+    PASSWORD_SHORT: 'Password must be at least 6 characters',
+    EMAIL_TAKEN: 'A user with this email already exists',
+  } as Record<string, string>,
 }
 
 export type Dict = typeof en
@@ -106,7 +125,6 @@ const he: Dict = {
   haveAccount: 'כבר יש לך חשבון?',
   invalidLogin: 'אימייל או סיסמה שגויים',
   loginFailed: 'ההתחברות נכשלה, נסו שוב',
-  emailTaken: 'משתמש עם האימייל הזה כבר קיים',
   signUpFailed: 'ההרשמה נכשלה, נסו שוב',
 
   admin: 'מנהל',
@@ -158,6 +176,25 @@ const he: Dict = {
   saving: 'שומר...',
 
   hours: 'שעות',
+
+  serverErrors: {
+    MISSING_FIELDS: 'יש למלא את כל השדות',
+    INVALID_USER_ID: 'עובד לא תקין',
+    INVALID_DATE: 'תאריך לא תקין',
+    END_BEFORE_START: 'שעת הסיום חייבת להיות אחרי שעת ההתחלה',
+    USER_NOT_FOUND: 'העובד לא נמצא',
+    SLOT_REQUIRED: 'בחרו יום ומשמרת',
+    INVALID_SLOT: 'המשמרת חייבת להיות בוקר, ערב או לילה',
+    INVALID_DAY: 'תאריך לא תקין',
+    SLOT_STARTED: 'המשמרת הזו כבר התחילה',
+    SHIFT_LENGTH: 'משמרת חייבת להיות בין 4 ל־12 שעות',
+    OVERLAP: 'לעובד כבר יש משמרת בשעה הזו',
+    MAX_IN_A_ROW: 'עובד לא יכול לעבוד יותר מ־12 שעות ברצף',
+    MAX_WEEK: 'עובד לא יכול לעבוד יותר מ־60 שעות בשבוע',
+    REGISTER_FIELDS: 'יש למלא שם, אימייל וסיסמה',
+    PASSWORD_SHORT: 'הסיסמה חייבת להכיל לפחות 6 תווים',
+    EMAIL_TAKEN: 'משתמש עם האימייל הזה כבר קיים',
+  },
 }
 
 export const dictionaries: Record<Lang, Dict> = { en, he }
@@ -168,3 +205,7 @@ export const I18nContext = createContext<I18n>({ lang: 'en', t: en, setLang: () 
 
 // const { t, lang } = useI18n()  →  t.save, t.days[0], t.pendingCount(3)
 export const useI18n = () => useContext(I18nContext)
+
+// Message for a failed request in the current language; unknown codes fall back to the server's text
+export const apiErrorText = (err: unknown, t: Dict) =>
+  err instanceof ApiError ? ((err.code && t.serverErrors[err.code]) ?? err.message) : t.somethingWrong

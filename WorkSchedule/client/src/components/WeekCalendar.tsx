@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Info, Plus } from 'lucide-react'
-import { ApiError, getShifts, requestShift, type Shift, type Slot, type User } from '../api'
+import { getShifts, requestShift, type Shift, type Slot, type User } from '../api'
 import { SLOTS, formatTime, placeShift, startOfWeek, toDateKey, weekDays } from '../dates'
-import { useI18n } from '../i18n'
+import { apiErrorText, useI18n } from '../i18n'
 import { SLOT_ICONS, STATUS_ICONS, STATUS_STYLES } from '../ui'
 import Alert from './Alert'
 import StatusBadge from './StatusBadge'
@@ -44,7 +44,7 @@ function WeekCalendar({ user }: Props) {
       await requestShift(date, slot)
       await load()
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t.somethingWrong)
+      setError(apiErrorText(err, t))
     } finally {
       setBusy(false)
     }
