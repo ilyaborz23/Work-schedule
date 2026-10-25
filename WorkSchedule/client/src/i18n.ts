@@ -16,6 +16,8 @@ const en = {
   name: 'Name',
   email: 'Email',
   password: 'Password',
+  registrationCode: 'Registration code',
+  registrationCodeHint: 'Ask your admin for the department code',
   signIn: 'Sign in',
   signingIn: 'Signing in...',
   signUp: 'Sign up',
@@ -100,6 +102,8 @@ const en = {
     REGISTER_FIELDS: 'Name, email and password are required',
     PASSWORD_SHORT: 'Password must be at least 6 characters',
     EMAIL_TAKEN: 'A user with this email already exists',
+    INVALID_REGISTRATION_CODE: 'Wrong registration code',
+    TOO_MANY_ATTEMPTS: 'Too many attempts, try again in 15 minutes',
   } as Record<string, string>,
 }
 
@@ -117,6 +121,8 @@ const he: Dict = {
   name: 'שם',
   email: 'אימייל',
   password: 'סיסמה',
+  registrationCode: 'קוד הרשמה',
+  registrationCodeHint: 'את קוד המחלקה מקבלים מהמנהל',
   signIn: 'התחברות',
   signingIn: 'מתחבר...',
   signUp: 'הרשמה',
@@ -194,6 +200,8 @@ const he: Dict = {
     REGISTER_FIELDS: 'יש למלא שם, אימייל וסיסמה',
     PASSWORD_SHORT: 'הסיסמה חייבת להכיל לפחות 6 תווים',
     EMAIL_TAKEN: 'משתמש עם האימייל הזה כבר קיים',
+    INVALID_REGISTRATION_CODE: 'קוד ההרשמה שגוי',
+    TOO_MANY_ATTEMPTS: 'יותר מדי ניסיונות, נסו שוב בעוד 15 דקות',
   },
 }
 

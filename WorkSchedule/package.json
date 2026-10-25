@@ -1,0 +1,13 @@
+{
+  "name": "workschedule",
+  "private": true,
+  "description": "Build and start for hosting (Railway): builds the client and the server, the server serves both",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "npm ci --include=dev --prefix client && npm run build --prefix client && npm ci --include=dev --prefix server && npm run build --prefix server",
+    "start": "npm start --prefix server",
+    "migrate": "npm run migrate:prod --prefix server"
+  }
+}

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import Alert from '../components/Alert'
 import AuthLayout from '../components/AuthLayout'
 import { ApiError, login, saveAuth, type User } from '../api'
-import { useI18n } from '../i18n'
+import { apiErrorText, useI18n } from '../i18n'
 
 type Props = {
   onLogin: (user: User) => void
@@ -27,6 +27,8 @@ function LoginPage({ onLogin, onSwitchToRegister }: Props) {
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setError(t.invalidLogin)
+      } else if (err instanceof ApiError && err.status === 429) {
+        setError(apiErrorText(err, t))
       } else {
         setError(t.loginFailed)
       }

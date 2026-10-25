@@ -9,8 +9,15 @@ const isText = (value: unknown): value is string => typeof value === "string" &&
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
 export const registerUser = async (req: Request, res: Response) =>{
-    const { name, password } = req.body ?? {};
+    const { name, password, registration_code } = req.body ?? {};
     let { email } = req.body ?? {};
+
+    // Only people who got the department's code from the admin can sign up.
+    // No REGISTRATION_CODE in the environment = sign up is closed.
+    const requiredCode = process.env.REGISTRATION_CODE;
+    if (!requiredCode || registration_code !== requiredCode) {
+        return res.status(403).json({ code: "INVALID_REGISTRATION_CODE", message: "Wrong registration code" });
+    }
 
     // Strings only: a number as password used to crash bcrypt with a 500
     if (!isText(name) || !isText(password) || !isText(email)) {

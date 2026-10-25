@@ -73,10 +73,11 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   return data as T
 }
 
-export const register = (name: string, email: string, password: string) =>
+// registrationCode: the department's code the admin gives to employees
+export const register = (name: string, email: string, password: string, registrationCode: string) =>
   api<User>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ name, email, password, registration_code: registrationCode }),
   })
 
 export const login = (email: string, password: string) =>

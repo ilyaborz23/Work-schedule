@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "tsc",
-    "start": "node --env-file=.env dist/index.js",
-    "migrate": "tsx --env-file=.env src/db/migrate.ts"
+    "start": "node --env-file-if-exists=.env dist/index.js",
+    "migrate": "tsx --env-file=.env src/db/migrate.ts",
+    "migrate:prod": "node --env-file-if-exists=.env dist/db/migrate.js"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,7 @@
     "@neondatabase/serverless": "^1.2.0",
     "bcryptjs": "^3.0.3",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.7.1",
     "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
@@ -28,5 +30,8 @@
   },
   "allowScripts": {
     "esbuild@0.28.2": true
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

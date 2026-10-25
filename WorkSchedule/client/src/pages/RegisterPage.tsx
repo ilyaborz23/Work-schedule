@@ -13,6 +13,7 @@ function RegisterPage({ onLogin, onSwitchToLogin }: Props) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [registrationCode, setRegistrationCode] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { t } = useI18n()
@@ -22,13 +23,13 @@ function RegisterPage({ onLogin, onSwitchToLogin }: Props) {
     setError('')
     setLoading(true)
     try {
-      await register(name, email, password)
+      await register(name, email, password, registrationCode)
       // Register doesn't return a token, so log in right after
       const { token, user } = await login(email, password)
       saveAuth(token, user)
       onLogin(user)
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 400 || err.status === 409)) {
+      if (err instanceof ApiError && err.status < 500) {
         setError(apiErrorText(err, t))
       } else {
         setError(t.signUpFailed)
@@ -75,6 +76,18 @@ function RegisterPage({ onLogin, onSwitchToLogin }: Props) {
             minLength={6}
             required
           />
+        </label>
+
+        <label className="label">
+          {t.registrationCode}
+          <input
+            className="input"
+            value={registrationCode}
+            onChange={(e) => setRegistrationCode(e.target.value)}
+            autoComplete="off"
+            required
+          />
+          <span className="text-xs font-normal text-slate-400">{t.registrationCodeHint}</span>
         </label>
 
         {error && <Alert>{error}</Alert>}
