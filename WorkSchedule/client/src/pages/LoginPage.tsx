@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react'
+import Alert from '../components/Alert'
+import AuthLayout from '../components/AuthLayout'
 import { ApiError, login, saveAuth, type User } from '../api'
+import { useI18n } from '../i18n'
 
 type Props = {
   onLogin: (user: User) => void
@@ -11,6 +14,7 @@ function LoginPage({ onLogin, onSwitchToRegister }: Props) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { t } = useI18n()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -22,9 +26,9 @@ function LoginPage({ onLogin, onSwitchToRegister }: Props) {
       onLogin(user)
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        setError('Invalid email or password')
+        setError(t.invalidLogin)
       } else {
-        setError('Login failed, please try again')
+        setError(t.loginFailed)
       }
     } finally {
       setLoading(false)
@@ -32,13 +36,12 @@ function LoginPage({ onLogin, onSwitchToRegister }: Props) {
   }
 
   return (
-    <div className="login-page">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <h1>Work Schedule</h1>
-
-        <label>
-          Email
+    <AuthLayout title={t.appName} subtitle={t.signInSubtitle}>
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <label className="label">
+          {t.email}
           <input
+            className="input"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -47,9 +50,10 @@ function LoginPage({ onLogin, onSwitchToRegister }: Props) {
           />
         </label>
 
-        <label>
-          Password
+        <label className="label">
+          {t.password}
           <input
+            className="input"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -58,20 +62,20 @@ function LoginPage({ onLogin, onSwitchToRegister }: Props) {
           />
         </label>
 
-        {error && <p className="error">{error}</p>}
+        {error && <Alert>{error}</Alert>}
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Signing in...' : 'Sign in'}
+        <button type="submit" className="btn btn-primary mt-2 w-full" disabled={loading}>
+          {loading ? t.signingIn : t.signIn}
         </button>
 
-        <p className="switch">
-          No account yet?{' '}
-          <button type="button" className="link" onClick={onSwitchToRegister}>
-            Sign up
+        <p className="text-center text-sm text-slate-400">
+          {t.noAccount}{' '}
+          <button type="button" className="font-medium text-cyan-400 hover:underline" onClick={onSwitchToRegister}>
+            {t.signUp}
           </button>
         </p>
       </form>
-    </div>
+    </AuthLayout>
   )
 }
 

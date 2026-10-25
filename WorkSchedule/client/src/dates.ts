@@ -1,12 +1,11 @@
 import type { Shift, Slot } from './api'
 
-export const SLOTS: { key: Slot; label: string; short: string; start: string; end: string }[] = [
-  { key: 'morning', label: 'Morning', short: 'M', start: '07:00', end: '15:00' },
-  { key: 'afternoon', label: 'Afternoon', short: 'A', start: '15:00', end: '23:00' },
-  { key: 'night', label: 'Night', short: 'N', start: '23:00', end: '07:00' },
+// Names of slots and days are in i18n.ts (t.slots, t.days)
+export const SLOTS: { key: Slot; start: string; end: string }[] = [
+  { key: 'morning', start: '07:00', end: '15:00' },
+  { key: 'afternoon', start: '15:00', end: '23:00' },
+  { key: 'night', start: '23:00', end: '07:00' },
 ]
-
-export const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 // Week starts on Sunday, like in Israel
 export const startOfWeek = (date: Date) => {
@@ -46,10 +45,10 @@ export const placeShift = (shift: Shift): { day: string; slot: Slot } => {
   return { day: toDateKey(addDays(start, -1)), slot: 'night' }
 }
 
-// "M" / "A" / "N" for a standard slot, otherwise the real hours like "07–19"
-export const shiftLabel = (shift: Shift) => {
+// Short slot name ("M" / "ב") for a standard slot, otherwise the real hours like "07–19"
+export const shiftLabel = (shift: Shift, slotShort: Record<Slot, string>) => {
   const start = formatTime(shift.start_time)
   const end = formatTime(shift.end_time)
   const slot = SLOTS.find((s) => s.start === start && s.end === end)
-  return slot ? slot.short : `${start.slice(0, 2)}–${end.slice(0, 2)}`
+  return slot ? slotShort[slot.key] : `${start.slice(0, 2)}–${end.slice(0, 2)}`
 }

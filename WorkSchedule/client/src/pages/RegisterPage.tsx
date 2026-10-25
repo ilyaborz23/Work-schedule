@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react'
+import Alert from '../components/Alert'
+import AuthLayout from '../components/AuthLayout'
 import { ApiError, login, register, saveAuth, type User } from '../api'
+import { useI18n } from '../i18n'
 
 type Props = {
   onLogin: (user: User) => void
@@ -12,6 +15,7 @@ function RegisterPage({ onLogin, onSwitchToLogin }: Props) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { t } = useI18n()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -25,11 +29,11 @@ function RegisterPage({ onLogin, onSwitchToLogin }: Props) {
       onLogin(user)
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError('A user with this email already exists')
+        setError(t.emailTaken)
       } else if (err instanceof ApiError && err.status === 400) {
         setError(err.message)
       } else {
-        setError('Sign up failed, please try again')
+        setError(t.signUpFailed)
       }
     } finally {
       setLoading(false)
@@ -37,13 +41,12 @@ function RegisterPage({ onLogin, onSwitchToLogin }: Props) {
   }
 
   return (
-    <div className="login-page">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <h1>Sign up</h1>
-
-        <label>
-          Name
+    <AuthLayout title={t.createAccount} subtitle={t.signUpSubtitle}>
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <label className="label">
+          {t.name}
           <input
+            className="input"
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoComplete="name"
@@ -51,9 +54,10 @@ function RegisterPage({ onLogin, onSwitchToLogin }: Props) {
           />
         </label>
 
-        <label>
-          Email
+        <label className="label">
+          {t.email}
           <input
+            className="input"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -62,9 +66,10 @@ function RegisterPage({ onLogin, onSwitchToLogin }: Props) {
           />
         </label>
 
-        <label>
-          Password
+        <label className="label">
+          {t.password}
           <input
+            className="input"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -74,20 +79,20 @@ function RegisterPage({ onLogin, onSwitchToLogin }: Props) {
           />
         </label>
 
-        {error && <p className="error">{error}</p>}
+        {error && <Alert>{error}</Alert>}
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Signing up...' : 'Sign up'}
+        <button type="submit" className="btn btn-primary mt-2 w-full" disabled={loading}>
+          {loading ? t.signingUp : t.signUp}
         </button>
 
-        <p className="switch">
-          Already have an account?{' '}
-          <button type="button" className="link" onClick={onSwitchToLogin}>
-            Sign in
+        <p className="text-center text-sm text-slate-400">
+          {t.haveAccount}{' '}
+          <button type="button" className="font-medium text-cyan-400 hover:underline" onClick={onSwitchToLogin}>
+            {t.signIn}
           </button>
         </p>
       </form>
-    </div>
+    </AuthLayout>
   )
 }
 

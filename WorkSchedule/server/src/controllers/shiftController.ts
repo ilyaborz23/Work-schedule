@@ -17,6 +17,21 @@ const MAX_SHIFT_HOURS = 12;
 const MAX_HOURS_IN_A_ROW = 12;
 const MAX_WEEK_HOURS = 60;
 
+const OVERLAP_MESSAGE = "Employee already has a shift at this time";
+
+// Runs an INSERT/UPDATE of a shift. Two requests for the same time that arrive together both pass
+// checkShiftRules before either is saved; then the DB constraint shifts_no_overlap stops the second one
+const saveShift = async (query: Promise<unknown>) => {
+    try {
+        return { rows: (await query) as Shift[] };
+    } catch (err) {
+        if ((err as { code?: string }).code === "23P01") {
+            return { error: OVERLAP_MESSAGE };
+        }
+        throw err;
+    }
+};
+
 export const getAllShifts = async (req: Request, res: Response) => {
     const user = req.user!;
     const shifts = (user.role === "admin"
@@ -80,11 +95,19 @@ const validateSlotBody = async (body: any) => {
         return { error: "Date must be in YYYY-MM-DD format" };
     }
 
-    // Slot hours are Israel local time, Postgres converts them to an exact moment
+    // Slot hours are Israel local time, Postgres converts them to an exact moment.
+    // The 8 hours are added to the local clock time, so on the nights the clocks change
+    // the night slot still ends at 07:00 (it's really 7 or 9 hours long then)
     const slotTime = SLOTS[slot as keyof typeof SLOTS];
-    const rows = await sql`SELECT (${date}::date + ${slotTime}::time) AT TIME ZONE ${TIME_ZONE} AS start_time`;
+    const rows = await sql`
+        SELECT (${date}::date + ${slotTime}::time) AT TIME ZONE ${TIME_ZONE} AS start_time,
+               (${date}::date + ${slotTime}::time + make_interval(hours => ${SLOT_HOURS})) AT TIME ZONE ${TIME_ZONE} AS end_time`;
     const start = new Date(rows[0]!.start_time);
-    const end = new Date(start.getTime() + SLOT_HOURS * HOUR);
+    const end = new Date(rows[0]!.end_time);
+
+    if (start.getTime() <= Date.now()) {
+        return { error: "Cannot request a shift that has already started" };
+    }
 
     return { start, end };
 };
@@ -101,7 +124,7 @@ const checkShiftRules = async (userId: number, start: Date, end: Date, excludeId
         WHERE user_id = ${userId} AND status <> 'rejected' AND id <> ${excludeId}
           AND start_time < ${end} AND end_time > ${start}`;
     if (overlapping.length > 0) {
-        return "Employee already has a shift at this time";
+        return OVERLAP_MESSAGE;
     }
 
     // Shifts that touch end-to-start are one block of work: walk back and forward to find its edges
@@ -161,11 +184,14 @@ export const createShift = async (req: Request, res: Response) => {
     }
 
     const status = isAdmin ? "approved" : "pending";
-    const rows = (await sql`
+    const saved = await saveShift(sql`
         INSERT INTO shifts (user_id, start_time, end_time, status)
         VALUES (${userId}, ${start}, ${end}, ${status})
-        RETURNING *`) as Shift[];
-    res.status(201).json(rows[0]);
+        RETURNING *`);
+    if ("error" in saved) {
+        return res.status(409).json({ message: saved.error });
+    }
+    res.status(201).json(saved.rows[0]);
 };
 
 // Admin changes a shift (any hours); the changed shift is approved
@@ -186,15 +212,18 @@ export const updateShift = async (req: Request, res: Response) => {
         return res.status(409).json({ message: ruleError });
     }
 
-    const rows = (await sql`
+    const saved = await saveShift(sql`
         UPDATE shifts
         SET user_id = ${user_id}, start_time = ${start}, end_time = ${end}, status = 'approved'
         WHERE id = ${id}
-        RETURNING *`) as Shift[];
-    if (!rows[0]) {
+        RETURNING *`);
+    if ("error" in saved) {
+        return res.status(409).json({ message: saved.error });
+    }
+    if (!saved.rows[0]) {
         return res.status(404).json({ message: "Shift not found" });
     }
-    res.json(rows[0]);
+    res.json(saved.rows[0]);
 };
 
 // Admin approves or rejects a request
@@ -223,6 +252,10 @@ export const updateShiftStatus = async (req: Request, res: Response) => {
         }
     }
 
-    const rows = (await sql`UPDATE shifts SET status = ${status} WHERE id = ${id} RETURNING *`) as Shift[];
+    const saved = await saveShift(sql`UPDATE shifts SET status = ${status} WHERE id = ${id} RETURNING *`);
+    if ("error" in saved) {
+        return res.status(409).json({ message: saved.error });
+    }
+    const rows = saved.rows;
     res.json(rows[0]);
 };
